@@ -12,7 +12,7 @@ ocr_model = EasyOcr(lang=['en'], allow_list='0123456789ABCDEFGHIJKLMNOPQRSTUVWXY
 #Open webcam
 #cap = cv2.VideoCapture(0)
 
-image_folder = r"C:\Users\kient\Downloads\Projects\YOLO\Nhan dien bien so xe may\test" #Change dir here
+image_folder = r"path" #Change dir here
 image_paths = glob.glob(os.path.join(image_folder, '*'))
 
 #Main loop
