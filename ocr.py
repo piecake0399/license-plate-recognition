@@ -4,11 +4,11 @@ import numpy as np
 import easyocr
 import logging
 from logging.handlers import RotatingFileHandler
+from scipy.ndimage import rotate
 import cv2
-from preprocessing import preprocess_for_ocr
 
 class EasyOcr():
-    def __init__(self, lang=['en'], allow_list='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', min_size=50, log_level='INFO', log_dir='./logs/'):
+    def __init__(self, lang=['en'], allow_list='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-.', min_size=50, log_level='INFO', log_dir='./logs/'):
         self.reader = easyocr.Reader(lang, gpu=False)
         self.allow_list = allow_list
         self.min_size = min_size
@@ -27,6 +27,10 @@ class EasyOcr():
             self.logger.setLevel(self.num_log_level)
             self.logger.addHandler(my_handler)
 
+        # Ký tự hay nhầm lẫn
+        self.dict_char_to_int = {'O': '0', 'I': '1', 'J': '3', 'A': '4', 'G': '6', 'S': '5'}
+        self.dict_int_to_char = {'0': 'O', '1': 'I', '3': 'J', '4': 'A', '6': 'G', '5': 'S'}
+
     def run(self, detect_result_dict):
         if detect_result_dict['cropped_img'] is not None:
             t0 = time.time()
@@ -37,6 +41,7 @@ class EasyOcr():
             text = [x[1] for x in ocr_result]
             confid = [x[2] for x in ocr_result]
             text = "".join(text) if len(text) > 0 else None
+            text = self.format_license(text) if text else None
             confid = np.round(np.mean(confid), 2) if len(confid) > 0 else None
             t1 = time.time()
             print(f'Recognized number: {text}, conf.:{confid}.\nOCR total time: {(t1 - t0):.3f}s')
@@ -48,7 +53,41 @@ class EasyOcr():
             return {'text': None, 'confid': None}
 
     def ocr_img_preprocess(self, img):
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        img = cv2.resize(img, (img.shape[1]*2, img.shape[0]*2), interpolation=cv2.INTER_CUBIC)
-        _, img = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-        return img
+        # Grayscale
+        img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+        # Resize
+        img_gray = cv2.resize(img_gray, (img_gray.shape[1]*2, img_gray.shape[0]*2), interpolation=cv2.INTER_CUBIC)
+
+        # Threshold
+        _, img_thresh = cv2.threshold(img_gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+        # Invert
+        img_invert = 255 - img_thresh
+
+        return img_invert
+
+    def format_license(self, text):
+        """
+        Format lại biển số dựa vào vị trí và ký tự dễ nhầm.
+        Vị trí 0-1-4-5-6 thường là chữ → map số thành chữ.
+        Vị trí 2-3 thường là số → map chữ thành số.
+        """
+        if len(text) != 7:
+            return text
+
+        license_plate_ = ''
+        mapping = {
+            0: self.dict_int_to_char, 1: self.dict_int_to_char,
+            2: self.dict_char_to_int, 3: self.dict_char_to_int,
+            4: self.dict_int_to_char, 5: self.dict_int_to_char, 6: self.dict_int_to_char
+        }
+
+        for i in range(7):
+            char = text[i]
+            if char in mapping[i]:
+                license_plate_ += mapping[i][char]
+            else:
+                license_plate_ += char
+
+        return license_plate_
