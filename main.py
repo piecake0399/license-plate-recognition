@@ -52,8 +52,6 @@ def process_frame(frame):
             cropped = frame[ymin:ymax, xmin:xmax]
             if cropped.size > 0:
                 processed = preprocess_for_ocr(cropped)
-                cv2.imshow('Detected Object', processed)
-
                 detect_result_dict = {
                     'cropped_img': cropped,
                     'file_name': 'frame'
@@ -62,6 +60,7 @@ def process_frame(frame):
                 plate_text = ocr_result['text'] if ocr_result['text'] else "N/A"
 
                 cv2.putText(frame, plate_text, (xmin, ymin - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2)
+                cv2.imshow(f'Detected Object', processed)
     return frame
 
 # --- Handle input types ---
