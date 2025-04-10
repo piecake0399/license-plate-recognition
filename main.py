@@ -9,7 +9,7 @@ from preprocessing import preprocess_for_ocr
 
 # --- Load Model ---
 model = YOLO('best2.pt')
-ocr_model = EasyOcr(lang=['en'], allow_list='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', min_size=50, log_level='INFO')
+ocr_model = EasyOcr(lang=['en'], allow_list='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-.', min_size=50, log_level='INFO')
 
 # --- Parse args ---
 parser = argparse.ArgumentParser()
@@ -47,7 +47,7 @@ def process_frame(frame):
         xmin, ymin, xmax, ymax = xyxy
         conf = box.conf.item()
 
-        if conf > 0.5:
+        if conf > 0.4:
             cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), (0, 255, 0), 2)
             cropped = frame[ymin:ymax, xmin:xmax]
             if cropped.size > 0:
@@ -60,7 +60,7 @@ def process_frame(frame):
                 plate_text = ocr_result['text'] if ocr_result['text'] else "N/A"
 
                 cv2.putText(frame, plate_text, (xmin, ymin - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2)
-                cv2.imshow(f'Detected Object', processed)
+                #cv2.imshow(f'Detected Object', processed)
     return frame
 
 # --- Handle input types ---
