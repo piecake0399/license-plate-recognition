@@ -60,7 +60,7 @@ def process_frame(frame):
                 plate_text = ocr_result['text'] if ocr_result['text'] else "N/A"
 
                 cv2.putText(frame, plate_text, (xmin, ymin - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2)
-                #cv2.imshow(f'Detected Object', processed)
+                cv2.imshow(f'Detected Object', processed)
     return frame
 
 # --- Handle input types ---
