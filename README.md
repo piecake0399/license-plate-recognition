@@ -21,4 +21,4 @@ Run:
 ```
 python main.py --source <path to your source>
 ```
-your source can be an image, folder of images, video or webcam (usb0)
+<path to your source> can be path of an image, folder of images, video or webcam (usb0)
