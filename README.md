@@ -15,3 +15,10 @@ Installing packages
 ```
 pip install requirements.txt
 ```
+
+Run:
+
+```
+python main.py --source <path to your source>
+```
+your source can be an image, folder of images, video or webcam (usb0)
