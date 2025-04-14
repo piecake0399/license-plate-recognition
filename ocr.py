@@ -8,12 +8,13 @@ import cv2
 from preprocessing import preprocess_for_ocr
 
 class EasyOcr():
+    # --- Initialize OCR ---
     def __init__(self, lang=['en'], allow_list='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-.', min_size=50, log_level='INFO', log_dir='./logs/'):
         self.reader = easyocr.Reader(lang, gpu=True)
         self.allow_list = allow_list
         self.min_size = min_size
 
-        # Logging setup
+        # --- Logging setup ---
         self.logger = logging.getLogger(__name__)
         if log_level:
             self.num_log_level = getattr(logging, log_level.upper(), 20)
@@ -30,17 +31,19 @@ class EasyOcr():
         else:
             logging.basicConfig(level=logging.INFO)
 
+    # --- Run ---
     def run(self, detect_result_dict):
         if detect_result_dict['cropped_img'] is not None:
             t0 = time.time()
             img = detect_result_dict['cropped_img']
-            img = preprocess_for_ocr(img)
+            img = preprocess_for_ocr(img) # Preprocessing
             file_name = detect_result_dict.get('file_name')
 
             ocr_result = self.reader.readtext(img, allowlist=self.allow_list, min_size=self.min_size)
             text = [x[1] for x in ocr_result]
             confid = [x[2] for x in ocr_result]
 
+            # --- Text joining ---
             text = "".join(text) if text else None
             confid = np.round(np.mean(confid), 2) if confid else None
             t1 = time.time()
@@ -52,4 +55,4 @@ class EasyOcr():
 
             return {'text': text, 'confid': confid}
         else:
-            return {'text': None, 'confid': None}
+            return {'text': None, 'confid': None} # Return to none if no license plate is detected
