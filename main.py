@@ -1,15 +1,15 @@
 import os
 import glob
 import cv2
-import easyocr
 import argparse
 from ultralytics import YOLO
-from ocr import EasyOcr
-from preprocessing import preprocess_for_ocr
+from preprocess import preprocess
+from segmentation import segment_characters
+from char_classification import predict_character
 
 # --- Load Model ---
 model = YOLO('best2.pt')
-ocr_model = EasyOcr(lang=['en'], allow_list='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-.', min_size=50, log_level='INFO')
+#ocr_model = EasyOcr(lang=['en'], allow_list='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-.', min_size=50, log_level='INFO')
 
 # --- Parse args ---
 parser = argparse.ArgumentParser()
@@ -51,15 +51,16 @@ def process_frame(frame):
             cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), (0, 255, 0), 2)
             cropped = frame[ymin:ymax, xmin:xmax]
             if cropped.size > 0:
-                processed = preprocess_for_ocr(cropped)
+                processed = preprocess(cropped)
                 detect_result_dict = {
                     'cropped_img': cropped,
                     'file_name': 'frame'
                 }
-                ocr_result = ocr_model.run(detect_result_dict)
-                plate_text = ocr_result['text'] if ocr_result['text'] else "N/A"
-
-                cv2.putText(frame, plate_text, (xmin, ymin - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2)
+                character = segment_characters(processed)
+                for char in character:
+                    char = cv2.resize(char, (28, 28))
+                    predicted_char = predict_character(char)
+                    cv2.putText(frame, predicted_char, (xmin, ymin - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
                 cv2.imshow(f'Detected Object', processed)
     return frame
 
@@ -71,7 +72,7 @@ if input_type in ['image', 'folder']:
             print(f"Không đọc được ảnh {img_path}, bỏ qua.")
             continue
         frame = process_frame(frame)
-        cv2.imshow("YOLO Detection", frame)
+        cv2.imshow("License Plate Detection", frame)
         key = cv2.waitKey(0)
         if key == ord('q') or key == ord('Q'):
             break
@@ -82,7 +83,7 @@ elif input_type in ['video', 'webcam']:
         if not ret:
             break
         frame = process_frame(frame)
-        cv2.imshow("YOLO Detection", frame)
+        cv2.imshow("License Plate Detection", frame)
         key = cv2.waitKey(1)
         if key == ord('q') or key == ord('Q'):
             break
