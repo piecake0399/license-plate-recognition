@@ -7,11 +7,10 @@ from preprocess import preprocess
 from segmentation import segment_characters
 from char_classification import predict_character
 
-# --- Load Model ---
+# Load Model
 model = YOLO('best2.pt')
-#ocr_model = EasyOcr(lang=['en'], allow_list='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-.', min_size=50, log_level='INFO')
 
-# --- Parse args ---
+# Parse args
 parser = argparse.ArgumentParser()
 parser.add_argument('--source', required=True, help='Path to image/video/folder or webcam (usb0)')
 args = parser.parse_args()
@@ -19,7 +18,7 @@ source = args.source
 
 img_source = args.source
 
-# --- Determine input type ---
+# Determine input type
 if source.lower().startswith('usb'):
     input_type = 'webcam'
     cap = cv2.VideoCapture(int(source[3:]))
@@ -35,9 +34,9 @@ elif os.path.isdir(source):
     input_type = 'folder'
     image_paths = glob.glob(os.path.join(source, '*'))
 else:
-    raise ValueError(f"Không nhận diện được kiểu nguồn dữ liệu từ {source}")
+    raise ValueError(f"Input is not detected from {source}")
 
-# --- Main loop ---
+# Main loop
 def process_frame(frame):
     results = model(frame)[0]
     detections = results.boxes
@@ -56,15 +55,10 @@ def process_frame(frame):
                     'cropped_img': cropped,
                     'file_name': 'frame'
                 }
-                character = segment_characters(processed)
-                for char in character:
-                    char = cv2.resize(char, (28, 28))
-                    predicted_char = predict_character(char)
-                    cv2.putText(frame, predicted_char, (xmin, ymin - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
                 cv2.imshow(f'Detected Object', processed)
     return frame
 
-# --- Handle input types ---
+# Handle input types 
 if input_type in ['image', 'folder']:
     for img_path in image_paths:
         frame = cv2.imread(img_path)

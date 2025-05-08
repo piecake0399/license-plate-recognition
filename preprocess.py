@@ -1,6 +1,5 @@
 import cv2
 import imutils
-import numpy as np
 
 def preprocess(image):
     # Resize
@@ -14,8 +13,5 @@ def preprocess(image):
 
     # Bilateral filter
     blurred = cv2.bilateralFilter(contrast, 11, 17, 17)
-
-    # Thresholding
-    _, thresh = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
 
     return blurred
