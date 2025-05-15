@@ -1,5 +1,6 @@
 import torch
 from torchvision import transforms
+import numpy as np
 from PIL import Image
 import torch.nn as nn
 
@@ -45,11 +46,15 @@ transform = transforms.Compose([
 ])
 
 # Function to predict character
-def predict_character(image_path):
+def predict_character(img_input):
     from PIL import Image
     model.eval()
-    img = Image.open(image_path).convert('L')
-    img = transform(img).unsqueeze(0).to(device)
+    if isinstance(img_input, np.ndarray):
+        pil = Image.fromarray(img_input).convert('L')
+    else:
+        pil = Image.open(img_input).convert('L')
+
+    img = transform(pil).unsqueeze(0).to(device)
     with torch.no_grad():
         output = model(img)
         _, pred = torch.max(output, 1)

@@ -12,6 +12,15 @@ def preprocess(image):
     contrast = cv2.equalizeHist(gray)
 
     # Bilateral filter
-    blurred = cv2.bilateralFilter(contrast, 11, 17, 17)
+    blurred = cv2.bilateralFilter(contrast, 11, 15, 15)
+    
+    # Threshold
+    _, thresh = cv2.threshold(blurred, 112, 255, cv2.THRESH_BINARY)
+    #kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))
+    #clean = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel, iterations=1)
+    # Invert
+    thresh = cv2.bitwise_not(thresh)
+    # Canny
+    #canny = cv2.Canny(clean, 120, 255, 1)
 
-    return blurred
+    return thresh
