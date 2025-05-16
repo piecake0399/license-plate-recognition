@@ -58,7 +58,7 @@ def process_frame(frame):
 
                 predicted = segment_characters(processed)
                 print(f"Predicted string: {predicted}")
-                cv2.putText(frame, predicted, (xmin, ymin - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                #cv2.putText(frame, predicted, (xmin, ymin - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
                 #cv2.imshow(f'Detected Object', processed)
     return frame
 
