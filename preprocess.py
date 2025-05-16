@@ -18,9 +18,9 @@ def preprocess(image):
     # Threshold
     _, thresh = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY_INV)
     kernel = cv2.getStructuringElement(cv2.MORPH_CROSS, (3,3))
-    dilated = cv2.dilate(thresh,kernel,iterations = 5) 
+    dilated = cv2.dilate(thresh,kernel,iterations = 1) 
     # Invert
     # Canny
     #canny = cv2.Canny(clean, 120, 255, 1)
-
-    return thresh
+    cv2.imshow("Preprocessed Image", dilated)
+    return dilated
